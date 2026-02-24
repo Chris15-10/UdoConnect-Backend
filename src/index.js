@@ -1,14 +1,26 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
-import { PORT } from './config.js';
+import { PORT, ALLOWED_ORIGINS } from './config.js';
 import botRoutes from './routes/bot.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import chatRoutes from './routes/chat.routes.js';
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (ALLOWED_ORIGINS.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(morgan('dev'));
 app.use(express.json());
 
