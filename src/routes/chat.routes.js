@@ -1,7 +1,8 @@
 // src/routes/chat.routes.js
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middlewares/auth.middleware.js';
-getOrCreateSession,
+import {
+    getOrCreateSession,
     sendMessage,
     getMessages,
     getActiveSessions,
