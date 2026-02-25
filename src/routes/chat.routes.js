@@ -9,7 +9,9 @@ import {
     sendAdvisorMessage,
     checkActiveSession,
     startFlowSession,
-    endSessionByAdvisor
+    endSessionByAdvisor,
+    getHistoryClients,
+    getClientMessages
 } from '../controllers/chat.controller.js';
 
 const router = Router();
@@ -26,6 +28,8 @@ router.get('/messages/:sessionId', getMessages);
 
 // ── Rutas de ASESOR / ADMIN ──
 router.get('/sessions', requireRole('asesor', 'admin'), getActiveSessions);
+router.get('/history/clients', requireRole('asesor', 'admin'), getHistoryClients);
+router.get('/history/messages/:clientId', requireRole('asesor', 'admin'), getClientMessages);
 router.post('/advisor-message', requireRole('asesor', 'admin'), sendAdvisorMessage);
 router.post('/session/:sessionId/end', requireRole('asesor', 'admin'), endSessionByAdvisor);
 
