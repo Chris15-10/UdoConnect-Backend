@@ -61,10 +61,6 @@ export const login = async (req, res) => {
     }
 };
 
-/**
- * POST /api/auth/register
- * Body: { nombre, username, email, password, rol }
- */
 export const register = async (req, res) => {
     try {
         const { nombre, username, email, password, rol = 'cliente' } = req.body;
@@ -73,23 +69,23 @@ export const register = async (req, res) => {
             return res.status(400).json({ message: 'Todos los campos son requeridos.' });
         }
 
-        const { rows: existing } = await db.execute(
-            'SELECT id FROM usuarios WHERE username = $1 OR email = $2',
-            [username, email]
-        );
-
-        if (existing.length > 0) {
-            return res.status(409).json({ message: 'El usuario o email ya existe.' });
-        }
-
         const password_hash = await bcrypt.hash(password, 12);
 
+        // Optimización: Eliminado antipatrón Select-Insert-Select.
+        // Delegamos al motor de BD la validación de duplicados usando ON CONFLICT DO NOTHING
+        // para las restricciones UNIQUE de 'username' y 'email'.
         const { rows: inserted } = await db.execute(
             `INSERT INTO usuarios (nombre, username, email, password_hash, rol)
              VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT DO NOTHING
              RETURNING id, nombre, username, email, rol`,
             [nombre, username, email, password_hash, rol]
         );
+
+        if (inserted.length === 0) {
+            // Si la base de datos no retornó nada, significa que no insertó por conflicto de UNIQUE
+            return res.status(409).json({ message: 'El usuario o email ya existe.' });
+        }
 
         return res.status(201).json({ user: inserted[0] });
 

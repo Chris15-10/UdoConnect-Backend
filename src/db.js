@@ -4,7 +4,7 @@ dotenv.config();
 
 // Creamos el Pool UNA SOLA VEZ fuera de la función de ejecución.
 // Esto mantiene las conexiones abiertas y listas para usarse.
-const pool = new pg.Pool({
+export const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
   max: 10,               // Mantiene hasta 10 conexiones listas
