@@ -1,6 +1,5 @@
 // src/controllers/chat.controller.js
 import { db, pool } from '../db.js';
-import { BotModel } from '../models/bot.model.js';
 
 // ─────────────────────────────────────────────────────────────────
 // Helper interno: ejecuta y delega db a tx si está disponible.
@@ -16,7 +15,9 @@ const executeQuery = async (queryText, params, clientTx) => {
 // Logica local transaccional para pago magico
 async function procesarPagoMagicoLocally(idCliente, datosTemporales, clientTx) {
     const referencia = datosTemporales.referencia || '';
-    const { rows: pagoRows } = await executeQuery("SELECT id_pago, monto_pagado FROM pagos WHERE numero_referencia = $1 AND usado = false LIMIT 1", [referencia], clientTx);
+    const { rows: pagoRows } = await executeQuery("SELECT id_pago, monto_pagado FROM pagos WHERE numero_referencia = $1 AND usado = false LIMIT 1",
+        [referencia], clientTx);
+
     if (!pagoRows.length) return { exito: false };
 
     const pago = pagoRows[0];
@@ -468,5 +469,47 @@ export const endSessionByAdvisor = async (req, res) => {
     } catch (error) {
         console.error('[chat] endSessionByAdvisor:', error);
         res.status(500).json({ message: 'Error al terminar la sesión.' });
+    }
+};
+
+// ─────────────────────────────────────────────
+// ASESOR — obtener historial de clientes
+// ─────────────────────────────────────────────
+export const getHistoryClients = async (req, res) => {
+    try {
+        const query = `
+            SELECT c.id_cliente, c.nombre, c.identificador_externo, MAX(s.fecha_inicio) as ultima_sesion
+            FROM clientes c
+            JOIN sesiones s ON s.id_cliente = c.id_cliente
+            WHERE s.canal = 'web'
+            GROUP BY c.id_cliente
+            ORDER BY ultima_sesion DESC
+        `;
+        const { rows } = await db.execute(query);
+        return res.json({ clients: rows });
+    } catch (error) {
+        console.error('[chat] getHistoryClients:', error);
+        res.status(500).json({ message: 'Error al obtener el historial de clientes.' });
+    }
+};
+
+// ─────────────────────────────────────────────
+// ASESOR — obtener mensajes de un cliente (todas sus sesiones)
+// ─────────────────────────────────────────────
+export const getClientMessages = async (req, res) => {
+    try {
+        const { clientId } = req.params;
+        const query = `
+            SELECT m.id_mensaje, m.remitente, m.contenido, m.fecha_creacion, s.id_sesion
+            FROM mensajes m
+            JOIN sesiones s ON s.id_sesion = m.id_sesion
+            WHERE s.id_cliente = $1
+            ORDER BY m.fecha_creacion ASC
+        `;
+        const { rows } = await db.execute(query, [clientId]);
+        return res.json({ messages: rows });
+    } catch (error) {
+        console.error('[chat] getClientMessages:', error);
+        res.status(500).json({ message: 'Error al obtener mensajes del cliente.' });
     }
 };
