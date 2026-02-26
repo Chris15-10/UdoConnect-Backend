@@ -108,7 +108,7 @@ export const handleTelegramWebhook = async (req, res) => {
                 case 'verificar_pago_magico':
                     const verificacion = await BotModel.procesarPagoMagico(contexto.id_cliente, datosTemporales);
                     if (verificacion.exito) {
-                        textoEnviar = "Excelente! Hemos verificado tu transferencia por $" + verificacion.monto + " con el banco.\n\nTu factura ha sido pagada y tu servicio esta procesado. Gracias por preferir Calibra-Net!";
+                        textoEnviar = "Excelente! Hemos verificado tu transferencia por $" + verificacion.monto + " con el banco.\n\nTu factura ha sido pagada y tu servicio esta procesado. Gracias por preferir UdoConnect!";
                         opcionesNuevoPaso = [
                             { texto: "1. Volver al inicio", valor: "inicio" },
                             { texto: "2. Cerrar chat", valor: "despedida" }

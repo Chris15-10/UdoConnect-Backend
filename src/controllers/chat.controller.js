@@ -159,7 +159,7 @@ async function procesarRespuestaBot(idSesion, idCliente, mensajeUsuario, clientT
             case 'verificar_pago_magico': {
                 const verificacion = await procesarPagoMagicoLocally(idCliente, datosTemporales, clientTx);
                 if (verificacion.exito) {
-                    textoEnviar = `Excelente! Hemos verificado tu transferencia por $${verificacion.monto}.\n\nTu factura ha sido pagada y tu servicio esta procesado. ¡Gracias por preferir Calibra-Net!`;
+                    textoEnviar = `Excelente! Hemos verificado tu transferencia por $${verificacion.monto}.\n\nTu factura ha sido pagada y tu servicio esta procesado. ¡Gracias por preferir UdoConnect!`;
                     opcionesNuevoPaso = [{ texto: '1. Volver al inicio', valor: 'inicio' }, { texto: '2. Cerrar chat', valor: 'despedida' }];
                 } else {
                     textoEnviar = `No encontramos un pago disponible con la referencia ${datosTemporales.referencia || ''}, o ya fue procesada. Por favor verifica el numero e intenta de nuevo.`;
