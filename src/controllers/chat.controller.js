@@ -100,6 +100,28 @@ async function procesarRespuestaBot(idSesion, idCliente, mensajeUsuario, clientT
         if (ultimoPaso === 'generar_factura_nueva' || ultimoPaso === 'reportar_pago') {
             datosTemporales.metodo_pago = opcionElegida.texto;
         }
+
+        // --- NUEVA LÓGICA: GUARDAR EL PLAN Y EL PRECIO ---
+        if (['servicios_tv', 'servicios_internet', 'servicios_movil'].includes(ultimoPaso) && siguientePasoCodigo === 'pedir_datos') {
+            datosTemporales.plan_elegido = opcionElegida.texto;
+
+            // Diccionario de precios exactos según las imágenes de tus planes
+            const catalogo_precios = {
+                "1. Básico SD": 19,
+                "2. Estándar HD": 35,
+                "3. Premium 4K": 55,
+                "1. Internet Básico": 29,
+                "2. Internet Rápido": 49,
+                "3. Internet Ultra": 79,
+                "1. Móvil Básico": 15,
+                "2. Móvil Plus": 25,
+                "3. Móvil Ilimitado": 40
+            };
+
+            // Asignamos el precio al monto temporal (por defecto 0 si hay error)
+            datosTemporales.monto = catalogo_precios[opcionElegida.texto] || 0;
+        }
+        // --------------------------------------------------
     }
 
     const { rows: npRows } = await executeQuery("SELECT * FROM bot_pasos WHERE codigo_paso = $1", [siguientePasoCodigo], clientTx);
